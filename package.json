@@ -2,9 +2,35 @@
   "dependencies": {
     "@hyperledger/fabric-gateway": "^1.2.2",
     "fabric-contract-api": "^2.5.2",
-    "fabric-shim": "^2.5.2"
+    "fabric-shim": "^2.5.2",
+    "mocha": "^10.2.0"
   },
   "devDependencies": {
-    "eslint": "^8.39.0"
-  }
+    "eslint": "^8.39.0",
+    "nyc": "^15.1.0"
+  },
+  "name": "rollup",
+  "version": "1.0.0",
+  "description": "Hyperledger Fabric Rollup",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "start": "fabric-chaincode-node start",
+    "test": "nyc mocha test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mmarton12/hyperledger-rollup.git"
+  },
+  "keywords": [
+    "hyperledger"
+  ],
+  "author": "Marton Moro",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mmarton12/hyperledger-rollup/issues"
+  },
+  "homepage": "https://github.com/mmarton12/hyperledger-rollup#readme"
 }
