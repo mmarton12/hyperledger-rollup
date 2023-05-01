@@ -1,0 +1,10 @@
+{
+  "dependencies": {
+    "@hyperledger/fabric-gateway": "^1.2.2",
+    "fabric-contract-api": "^2.5.2",
+    "fabric-shim": "^2.5.2"
+  },
+  "devDependencies": {
+    "eslint": "^8.39.0"
+  }
+}
