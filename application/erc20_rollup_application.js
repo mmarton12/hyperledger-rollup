@@ -1,22 +1,48 @@
-import * as grpc from '@grpc/grpc-js';
-import * as crypto from 'crypto';
-import { connect, Identity, signers } from '@hyperledger/fabric-gateway';
-import { promises as fs } from 'fs';
-import { TextDecoder } from 'util';
-import { ChaincodeEventsBuilder } from '@hyperledger/fabric-gateway/dist/chaincodeeventsbuilder';
-import { request } from 'http';
-import { assert } from 'console';
+// import * as grpc from '@grpc/grpc-js';
+// import * as crypto from 'crypto';
+// import { connect, Identity, signers } from '@hyperledger/fabric-gateway';
+// import { promises as fs } from 'fs';
+// import { TextDecoder } from 'util';
+// import { ChaincodeEventsBuilder } from '@hyperledger/fabric-gateway/dist/chaincodeeventsbuilder';
+// import { request } from 'http';
+// import { assert } from 'console';
+
+const { Wallets, Gateway} = require('fabric-network');
+const fs = require('fs');
+const path = require('path');
+
+const Client = require('fabric-client');
+const winston = require('winston');
+
+// Set the logging levels
+const levels = {
+    error: 0,
+    warn: 1,
+    info: 2,
+    debug: 3
+  };
+  
+  // Set the logging colors
+  const colors = {
+    error: 'red',
+    warn: 'yellow',
+    info: 'green',
+    debug: 'blue'
+  };
+  
+  // Create a logger
+  const logger = winston.createLogger({
+    levels: levels,
+    format: winston.format.combine(
+      winston.format.colorize({ all: true }),
+      winston.format.simple()
+    ),
+    transports: [new winston.transports.Console()]
+  });
 
 const utf8Decoder = new TextDecoder();
 
-const channelName = process.env.CHANNEL_NAME || 'mychannel';
-const chaincodeName = process.env.CHAINCODE_NAME || 'basic';
-
-const mspOrg1 = 'Org1MSP';
-const walletPath = path.join(__dirname, 'wallet');
-const org1UserId = 'javascriptAppUser';
-
-const batchSize = 5;
+const maxBatchSize = 20;
 var currentBatchSize = 0;
 var modifiedBalances = new Map();
 
@@ -30,6 +56,8 @@ var symbol;
 async function initToken(_name, _symbol){
     name = _name;
     symbol = _symbol;
+
+    logger.info('Token initialized')
 }
 
 function balanceOf(account) {
@@ -38,7 +66,7 @@ function balanceOf(account) {
 
 // Checks if a key is locked on the main chain
 async function isLocked(key) {
-    const state = await contract.submitTransaction('isLocked', key);
+    const state = await contract.evaluateTransaction('isLocked', key);
     return state;
 }
 
@@ -55,6 +83,9 @@ async function mint(to, amount) {
     balances.set(to, newBalance);
     modifiedBalances.set(to, newBalance);
     totalSupply += amount;
+
+    logger.info('tokens minted to: ', to)
+    logger.info('minted amount: ', amount);
     currentBatchSize++;
     checkBatchSize();
 }
@@ -70,11 +101,13 @@ function burn(account, amount) {
     modifiedBalances.set(account, newBalance);
     totalSupply -= amount;
 
+    logger.info('tokens burned from: ', account)
+    logger.info('burned amount: ', amount);
+
     currentBatchSize++;
     checkBatchSize();
 }
 
-async 
 async function transfer(from, to, value){
     // TODO: access check
 
@@ -88,6 +121,10 @@ async function transfer(from, to, value){
 
     balances(from) -= value;
     balances(to) += value;
+
+    logger.info('tokens transfered from: ', from)
+    logger.info('tokens transfered to: ', to)
+    logger.info('transfered amount: ', amount)
 }
 
 // Function for submitting rollup to main chain
@@ -97,6 +134,8 @@ async function submitBatch() {
     await contract.submitTransaction('modifyKeys', JSON.stringify(obj));
 
     modifiedBalances.clear();
+
+    logger.info('Batch submitted');
 }
 
 
@@ -107,35 +146,30 @@ function checkBatchSize() {
 
 async function main() {
 
-    // TODO: path to certificate
-    const credentials = await fs.readFile('path/to/certificate.pem');
-    const identity = { mspId: 'myorg', credentials};
+    const walletPath = path.join(process.cwd(), 'wallet');
+    const wallet = await Wallets.newFileSystemWallet(walletPath);
 
-    // TODO: path to PKpem
-    const privateKeyPem = await fs.readFile('path/to/privateKey.pem');
-    const privateKey = crypto.createPrivateKey(privateKeyPem);
-    const signer = signer.newPrivateKeySigner(privateKey);
+    const connectionProfile = path.join(process.cwd(), 'connection.json');
 
-    // TODO: modify address
-    const client = new grpc.Client('gateway.example.org:1337', grpc.credentials.createInsecure());
+    const connectionOptions = {
+        wallet,
+        identity: 'user1',
+        discovery: { enable: true, asLocalhost: true},
+    };
 
-    const gateway = connect({ identity, signer, client });
+    const gateway = new Gateway();
 
-    try {
+    try{
+        await gateway.connect(connectionProfile, connectionOptions);
 
-        try {
-            // TODO: channel and contract name
-            const network = gateway.getNetwork(channelName);
-            const contract = network.getContract(chaincodeName);
-
-        } finally {
-            gateway.close();
-            client.close();
-        }
-
-        
-    } catch (error) {
-		console.error(`******** FAILED to run the application: ${error}`);
-		process.exit(1);        
+        const network = await gateway.getNetwork('mychannel');
+        const contract = network.getContract('RollupContract');
+    } finally {
+        gateway.disconnect();
     }
 }
+
+main().catch((error) => {
+    console.error(err);
+    process.exit(1);
+})

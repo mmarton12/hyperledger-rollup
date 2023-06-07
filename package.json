@@ -3,7 +3,8 @@
     "@hyperledger/fabric-gateway": "^1.2.2",
     "fabric-contract-api": "^2.5.2",
     "fabric-shim": "^2.5.2",
-    "mocha": "^10.2.0"
+    "mocha": "^10.2.0",
+    "winston": "^3.9.0"
   },
   "devDependencies": {
     "eslint": "^8.39.0",
