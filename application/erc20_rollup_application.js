@@ -1,12 +1,3 @@
-// import * as grpc from '@grpc/grpc-js';
-// import * as crypto from 'crypto';
-// import { connect, Identity, signers } from '@hyperledger/fabric-gateway';
-// import { promises as fs } from 'fs';
-// import { TextDecoder } from 'util';
-// import { ChaincodeEventsBuilder } from '@hyperledger/fabric-gateway/dist/chaincodeeventsbuilder';
-// import { request } from 'http';
-// import { assert } from 'console';
-
 const { Wallets, Gateway} = require('fabric-network');
 const fs = require('fs');
 const path = require('path');
