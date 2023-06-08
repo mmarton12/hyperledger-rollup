@@ -1,5 +1,5 @@
 'use strict'
 
-const RollupContract = require('./lib/rollup.js');
+const RollupContract = require('./chaincode/rollup.js');
 
 module.exports.contracts = [RollupContract]
