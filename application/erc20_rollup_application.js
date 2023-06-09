@@ -155,6 +155,16 @@ async function main() {
 
         const network = await gateway.getNetwork('mychannel');
         const contract = network.getContract('RollupContract');
+
+        initToken("TEST", "TST");
+        mint('Org1MSP', 100);
+        for (let index = 0; index < 20; index++) {
+            transfer('Org1MSP', 'Org2MSP', 1);
+            burn('Org2MSP', 1);
+        }
+
+
+        
     } finally {
         gateway.disconnect();
     }
