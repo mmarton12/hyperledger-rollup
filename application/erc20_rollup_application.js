@@ -49,11 +49,27 @@ async function initToken(_name, _symbol){
     symbol = _symbol;
 
     logger.info('Token initialized')
+
+    await contract.submitTransaction('modifyKeys', JSON.stringify(obj));
+
 }
 
 function balanceOf(account) {
     return balances(account);
 }
+
+function getName(){
+    return name;
+}
+
+function getSymbol(){
+    return symbol;
+}
+
+function totalSupply(){
+    return totalSupply;
+}
+
 
 // Checks if a key is locked on the main chain
 async function isLocked(key) {
@@ -62,7 +78,6 @@ async function isLocked(key) {
 }
 
 async function mint(to, amount) {
-    // TODO: access check
 
     if(balances.has(to)) {  
             assert(isLocked(to))
@@ -82,7 +97,6 @@ async function mint(to, amount) {
 }
 
 function burn(account, amount) {
-    // TODO: access check
 
     assert(isLocked(account));
     assert(balances(account) >= amount);
@@ -100,7 +114,6 @@ function burn(account, amount) {
 }
 
 async function transfer(from, to, value){
-    // TODO: access check
 
     assert(balances(from) >= value);
     assert(isLocked(from));
@@ -162,8 +175,6 @@ async function main() {
             transfer('Org1MSP', 'Org2MSP', 1);
             burn('Org2MSP', 1);
         }
-
-
         
     } finally {
         gateway.disconnect();

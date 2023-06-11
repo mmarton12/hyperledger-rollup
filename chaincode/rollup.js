@@ -52,7 +52,7 @@ async modifyKeys(ctx, batchArray){
         );
     }
 
-    const objectType = 'lock';
+    const objectType = 'locked';
     const compositeKey = ctx.stub.createCompositeKey(objectType, key);
     await stub.putState(compositeKey, true);
     }
@@ -66,8 +66,8 @@ async modifyKeys(ctx, batchArray){
                 "AUTHENTICATION_ERROR"
             );
         }
-    
-        const objectType = 'lock';
+
+        const objectType = 'unlocked';
         const compositeKey = ctx.stub.createCompositeKey(objectType, key);
         await stub.putState(compositeKey, false);
         }
@@ -78,6 +78,11 @@ async modifyKeys(ctx, batchArray){
         const keyLocked = await stub.getState(compositeKey);
         
         return keyLocked;
+    }
+
+    async initToken(ctx, name, symbol){
+        await ctx.stub.putState('name', name);
+        await ctx.stub.putState('symbol', symbol);
     }
 
     async unknownTransaction(ctx) {
